@@ -15,7 +15,7 @@ from collections import Counter
 from nltk.corpus import stopwords
 
 
-os.environ['currworkdir'] = "C:/Users/DataforStPeters.xlsx"
+os.environ['currworkdir'] = "D:/Aakash_Documents/MS_Collections/AcceptanceFromSaintPeters/ClassStuff/rstudiocodebyted/VeriskProject/Test_Articles.xlsx"
 
 tagger = ner.SocketNER(host='localhost', port=8081)
 
@@ -201,7 +201,7 @@ def  countCrimeAcceptancePhrases(phrase):
         if phrase in CompletedataNoStopWords[p][0].lower():
             surity.append(p);
     
-arr = ['accepts','admitted','pled guilty','pleaded guilty','charged with','got jail','indicted of','was indicted','is sentenced','indictment','surrendered'];
+arr = ['accepts','admitted','pled guilty','pleaded guilty','charged with','got jail','indicted of','was indicted','is sentenced','indictment','surrendered','additionally charged'];
 
 for p in arr:
     countCrimeAcceptancePhrases(p);       
@@ -256,6 +256,8 @@ insurancefraudtype = ['life insurance',
      'homeowners insurance',
      'fighting insurance', 
      'premium fraud',
+     'medicaid fraud',
+     'compensation fraud',
      'insurance fraud'] 
 
 for p in range(0,len(CompletedataNoStopWords)):
@@ -277,23 +279,36 @@ for p in range(0,len(CompletedataNoStopWords)):
 #This code will find fraud names in text appended with phrases in surity list
 finalentities=[];
 finalentitiestest = [];
+looprun=0;
 for countmain in range(0,len(CompletedataNoStopWords)):
     if countmain == 0:
        CompletedataNoStopWords[0].append('FinalList'); 
     else :
+        if (countmain in surity) and (len(CompletedataNoStopWords[countmain][7]) <> 1 or len(CompletedataNoStopWords[countmain][7]) <> 2):        
+            looprun+=1;
+        
         if len(CompletedataNoStopWords[countmain][7]) == 1:
             uniquenameverification = CompletedataNoStopWords[countmain][7];
-            CompletedataNoStopWords[countmain].append(uniquenameverification);
-            finalentitiestest.append(uniquenameverification);
+            if type(uniquenameverification)==list:
+                CompletedataNoStopWords[countmain].append(uniquenameverification[0]);
+                finalentitiestest.append(uniquenameverification[0]);
+            else:
+                CompletedataNoStopWords[countmain].append(uniquenameverification);
+                finalentitiestest.append(uniquenameverification);
         elif len(CompletedataNoStopWords[countmain][7])==2:
             most_common,num_most_common = Counter(CompletedataNoStopWords[countmain][6]).most_common(1)[0]
             uniquenameverification = most_common;
-            CompletedataNoStopWords[countmain].append(uniquenameverification);
-            finalentitiestest.append(uniquenameverification);
+            
+            if type(uniquenameverification)==list:
+                CompletedataNoStopWords[countmain].append(uniquenameverification[0]);
+                finalentitiestest.append(uniquenameverification[0]);
+            else:
+                CompletedataNoStopWords[countmain].append(uniquenameverification);
+                finalentitiestest.append(uniquenameverification);            
         elif countmain not in surity:
             CompletedataNoStopWords[countmain].append('');
         else :   
-            if countmain == 1:
+            if looprun == 1:
                 for f in range(0,len(surity)):
                     index = surity[f];
                     
@@ -335,8 +350,12 @@ for countmain in range(0,len(CompletedataNoStopWords)):
                                 elif  ('surrendered' + ' ' + uniquenameverification[b].lower() in verification[g].lower()) or (uniquenameverification[b].lower() + ' ' + 'surrendered' in verification[g].lower()) :                
                                      finalentities.append(uniquenameverification[b]);
                                      finalentitiestest.append(uniquenameverification[b]);
+                                elif  ('additionally charged' + ' ' + uniquenameverification[b].lower() in verification[g].lower()) or (uniquenameverification[b].lower() + ' ' + 'additionally charged' in verification[g].lower()) :                
+                                     finalentities.append(uniquenameverification[b]);
+                                     finalentitiestest.append(uniquenameverification[b]);     
                         
                     if len(finalentities) <> 0:
+                        
                         finalentities = set(finalentities)
                         finalentities = list(finalentities)
                         finalentitiestest = set(finalentitiestest)
